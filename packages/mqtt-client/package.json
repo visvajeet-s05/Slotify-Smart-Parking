@@ -1,0 +1,1 @@
+{"name":"@slotify/mqtt-client","private":true,"type":"module","exports":"./src/index.ts","dependencies":{"mqtt":"^5.10.0"}}

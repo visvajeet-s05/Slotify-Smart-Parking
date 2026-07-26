@@ -1,0 +1,2 @@
+-- MySQL 8+ baseline migration.
+-- SlotStatusLog is indexed by (slotId, recordedAt) for time-window queries.

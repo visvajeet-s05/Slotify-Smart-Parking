@@ -1,0 +1,48 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files — ignore secrets, track templates
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+# Allow example/template env files
+!.env.example
+!.env*.example
+!.env.railway.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# logs
+*.log
+pulse.txt
+final_pulse.txt
+status.txt
+build.log
+build_v2.log
+
+# dev scripts
+quick_pulse_check.py
+verify_full_stack.py
+test_camera_service.py

@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole { CUSTOMER OWNER ADMIN GATE_OPERATOR }
+enum SlotStatus { AVAILABLE RESERVED OCCUPIED VIOLATION ADA EV_CHARGING }
+enum BookingStatus { UPCOMING ACTIVE COMPLETED CANCELLED }
+enum PaymentStatus { PENDING PAID FAILED REFUNDED }
+enum EVSessionStatus { ACTIVE GRACE_PERIOD COMPLETED OVERSTAY }
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  role UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  lots ParkingLot[] @relation("LotOwner")
+  bookings Booking[]
+}
+
+model ParkingLot {
+  id String @id @default(cuid())
+  ownerId String
+  name String
+  latitude Float
+  longitude Float
+  createdAt DateTime @default(now())
+  owner User @relation("LotOwner", fields: [ownerId], references: [id])
+  slots Slot[]
+  cameras Camera[]
+  gates BarrierGate[]
+  prices DynamicPriceLog[]
+}
+
+model Slot {
+  id String @id @default(cuid())
+  lotId String
+  label String
+  polygon Json
+  x Float?; y Float?; width Float?; height Float?
+  status SlotStatus @default(AVAILABLE)
+  updatedAt DateTime @updatedAt
+  lot ParkingLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+  evSessions EVSession[]
+  logs SlotStatusLog[]
+  @@unique([lotId, label])
+  @@index([lotId, status])
+}
+
+model Booking {
+  id String @id @default(cuid())
+  userId String
+  slotId String
+  startsAt DateTime
+  endsAt DateTime
+  status BookingStatus @default(UPCOMING)
+  user User @relation(fields: [userId], references: [id])
+  slot Slot @relation(fields: [slotId], references: [id])
+  payment Payment?
+  @@index([slotId, startsAt, endsAt])
+}
+
+model Payment { id String @id @default(cuid()); bookingId String @unique; amount Decimal @db.Decimal(12,2); status PaymentStatus @default(PENDING); txHash String? @unique; booking Booking @relation(fields: [bookingId], references: [id]) }
+model Camera { id String @id @default(cuid()); lotId String; name String; rtspUrl String; calibration Json?; lot ParkingLot @relation(fields: [lotId], references: [id], onDelete: Cascade) }
+model BarrierGate { id String @id @default(cuid()); lotId String; name String; devicePath String; lot ParkingLot @relation(fields: [lotId], references: [id], onDelete: Cascade) }
+model EVSession { id String @id @default(cuid()); slotId String; bookingId String?; status EVSessionStatus @default(ACTIVE); startedAt DateTime @default(now()); completedAt DateTime?; graceEndsAt DateTime?; multiplier Float @default(1); slot Slot @relation(fields: [slotId], references: [id]) }
+model SlotStatusLog { id BigInt @id @default(autoincrement()); slotId String; oldStatus SlotStatus; newStatus SlotStatus; source String; confidence Float?; recordedAt DateTime @default(now()); slot Slot @relation(fields: [slotId], references: [id]); @@index([slotId, recordedAt]) }
+model DynamicPriceLog { id String @id @default(cuid()); lotId String; baseRate Decimal @db.Decimal(12,2); multiplier Float; reason String; createdAt DateTime @default(now()); lot ParkingLot @relation(fields: [lotId], references: [id]); @@index([lotId, createdAt]) }

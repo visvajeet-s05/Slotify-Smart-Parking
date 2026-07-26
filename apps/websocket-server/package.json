@@ -1,0 +1,1 @@
+{"name":"@slotify/websocket-server","private":true,"type":"module","scripts":{"start":"tsx src/index.ts","typecheck":"tsc --noEmit"},"dependencies":{"redis":"^4.7.0","socket.io":"^4.8.1"},"devDependencies":{"@types/node":"^22.0.0","tsx":"^4.0.0","typescript":"^5.0.0"}}
